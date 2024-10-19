@@ -18,13 +18,13 @@ public class MyBot : IChessBot
         Double MinMaterial = Double.MaxValue;
         bool isMaximizing = board.IsWhiteToMove;
         
-        int depth = 2;
+        int depth = 4;
 
         // w/ Depth
         foreach (Move move in board.GetLegalMoves())
         {
             board.MakeMove(move);
-            Material = Eval(board, depth, isMaximizing);
+            Material = Eval(board, depth, !isMaximizing);
             if (isMaximizing)
             {
                 if (Material > MaxMaterial)
@@ -117,8 +117,9 @@ public class MyBot : IChessBot
         }
         */
 
-        if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes); } else {Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes); } //Coment for Bot games
-        //Console.WriteLine("StaticEval: " + MoveMaterial(board));
+        nodes /= 1000;
+        if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes +"k"); } else {Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k"); } //Coment for Bot games
+        //Console.WriteLine("StaticEval: " + MoveMaterial(board, 1));
         nodes = 0;
         return bestMove;
     }
@@ -132,7 +133,7 @@ public class MyBot : IChessBot
 
         if (depth <= 0 || board.IsInCheckmate() || board.IsDraw())
         {
-            material = MoveMaterial(board);
+            material = MoveMaterial(board, depth);
 
             return material;
         }
@@ -163,7 +164,7 @@ public class MyBot : IChessBot
         }
     }
 
-    public Double MoveMaterial(Board board)
+    public Double MoveMaterial(Board board, int depth)
     {
         nodes++;
         Double Material = 0;
@@ -175,11 +176,11 @@ public class MyBot : IChessBot
         {
             if (isWhite)
             {
-                return -1000;
+                return depth / -0.001; //play first Mate
             }
             else
             {
-                return 1000;
+                return depth / 0.001;
             }
         }
         if (board.IsDraw())
