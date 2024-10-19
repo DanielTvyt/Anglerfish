@@ -176,11 +176,11 @@ public class MyBot : IChessBot
         {
             if (isWhite)
             {
-                return depth / -0.001; //play first Mate
+                return 1000 / (depth + 1); //play first Mate
             }
             else
             {
-                return depth / 0.001;
+                return 1000 / (depth + 1);
             }
         }
         if (board.IsDraw())

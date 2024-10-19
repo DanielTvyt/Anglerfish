@@ -10,6 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="src\Evil Bot\EvilBot.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="src\Evil Bot\EvilBot.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Raylib-cs" Version="4.5.0.2" />
   </ItemGroup>
 
