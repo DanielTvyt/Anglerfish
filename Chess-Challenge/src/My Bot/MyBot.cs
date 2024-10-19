@@ -4,26 +4,28 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Security;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
+using System.Xml.Linq;
 
 public class MyBot : IChessBot
 {
+    public int nodes = 0;
     public Move Think(Board board, Timer timer)
     {
+        Move bestMove = board.GetLegalMoves()[0];
         Double Material = 0;
         Double MaxMaterial = Double.MinValue;
         Double MinMaterial = Double.MaxValue;
-        //Double Material2 = 0;
-        //Double MaxMaterial2 = 1000;
-        int Depth = 4;
+        bool isMaximizing = board.IsWhiteToMove;
+        
+        int depth = 2;
 
-        Move bestMove = board.GetLegalMoves()[0];
-
-        ///* w/ Depth
+        // w/ Depth
         foreach (Move move in board.GetLegalMoves())
         {
             board.MakeMove(move);
-            Material = Eval(board, Depth, true, true);
-            if (board.IsWhiteToMove)
+            Material = Eval(board, depth, isMaximizing);
+            if (isMaximizing)
             {
                 if (Material > MaxMaterial)
                 {
@@ -35,16 +37,15 @@ public class MyBot : IChessBot
             {
                 if (Material < MinMaterial)
                 {
-                    MaxMaterial = Material;
+                    MinMaterial = Material;
                     bestMove = move;
                 }
             }
             
-            Material = 0;
+            //Material = 0;
             board.UndoMove(move);
         }
-        //*/
-        
+
         /*
         foreach (Move move in allMoves)
         {
@@ -115,88 +116,77 @@ public class MyBot : IChessBot
             board.UndoMove(move);
         }
         */
-        
-        Console.WriteLine("Max: " + MaxMaterial); //Coment for Bot games
-        MaxMaterial = Double.MinValue;
+
+        if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes); } else {Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes); } //Coment for Bot games
+        //Console.WriteLine("StaticEval: " + MoveMaterial(board));
+        nodes = 0;
         return bestMove;
     }
 
-    public Double Eval (Board board, int Depth, bool Maximizing, bool isFirst)
+    public Double Eval (Board board, int depth, bool Maximizing)
     {
-        Double material = 0.69;
+        depth--;
+        Double material = 0;
         Double maxMaterial = Double.MinValue;
         Double minMaterial = Double.MaxValue;
 
-        foreach (Move move in board.GetLegalMoves())
+        if (depth <= 0 || board.IsInCheckmate() || board.IsDraw())
         {
+            material = MoveMaterial(board);
 
-            if (!isFirst)
-            {
-                board.MakeMove(move);
-            }
-
-            if (board.IsInCheckmate())
-            {
-                board.UndoMove(move);
-                if (Maximizing)
-                {
-                    return 10000;
-                }
-                else
-                {
-                    return -10000;
-                } 
-            }
-
-            //material = MoveMaterial(board);
-
-            if (Depth > 0)
-            {
-                Depth--;
-                material = (MoveMaterial(board) + Eval(board, Depth, !Maximizing, false)) / 2;
-            }
-            if (Depth == 0)
-            {
-                
-                if (Maximizing)
-                {
-                    if (material > maxMaterial)
-                    {
-                        maxMaterial = material;
-                    }
-                }
-                else
-                {
-                    if (material < minMaterial)
-                    {
-                        minMaterial = material;
-                    }
-                }
-            }
-            Console.WriteLine(material + " D: " + Depth);
-            if (!isFirst)
-            {
-                board.UndoMove(move);
-            }
-            material = 0;
+            return material;
         }
 
         if (Maximizing)
         {
+            foreach (Move move in board.GetLegalMoves())
+            {
+                board.MakeMove(move);
+                material = Eval(board, depth, false);
+                maxMaterial = Math.Max(material, maxMaterial);
+                board.UndoMove(move);
+            }
+            //Console.WriteLine(maxMaterial + " D: " + depth);
             return maxMaterial;
         }
         else
         {
+            foreach (Move move in board.GetLegalMoves())
+            {
+                board.MakeMove(move);
+                material = Eval(board, depth, true);
+                minMaterial = Math.Min(material, minMaterial);
+                board.UndoMove(move);
+            }
+            //Console.WriteLine(minMaterial + " D: " + depth);
             return minMaterial;
         }
     }
 
     public Double MoveMaterial(Board board)
     {
+        nodes++;
         Double Material = 0;
         int Row = 0;
         String FenBoard = board.GetFenString();
+        bool isWhite = board.IsWhiteToMove;
 
+        if (board.IsInCheckmate())
+        {
+            if (isWhite)
+            {
+                return -1000;
+            }
+            else
+            {
+                return 1000;
+            }
+        }
+        if (board.IsDraw())
+        {
+            return 0;
+        }
+     
 
         for (int i = 0; i < FenBoard.Length; i++)
         {
@@ -209,41 +199,49 @@ public class MyBot : IChessBot
                     Row++;
                     break;
                 case 'p':
-                    Material += 1 + Row * 0.1;
+                    Material -= 1 + Row * 0.1;
                     break;
                 case 'b':
-                    Material += 3;
+                    Material -= 3;
                     break;
                 case 'n':
-                    Material += 3;
+                    Material -= 3;
                     break;
                 case 'r':
-                    Material += 5;
+                    Material -= 5;
                     break;
                 case 'q':
-                    Material += 9;
+                    Material -= 9;
                     break;
 
                 case 'P':
-                    Material -= 1 + (8 - Row) * 0.1;
+                    Material += 1 + (7 - Row) * 0.1;
                     break;
                 case 'B':
-                    Material -= 3;
+                    Material += 3;
                     break;
                 case 'N':
-                    Material -= 3;
+                    Material += 3;
                     break;
                 case 'R':
-                    Material -= 5;
+                    Material += 5;
                     break;
                 case 'Q':
-                    Material -= 9;
+                    Material += 9;
                     break;
             }
         }
-        if (!board.IsWhiteToMove)
+
+        if (board.IsInCheck())
         {
-            Material *= -1;
+            if (isWhite)
+            {
+                Material -= 0.25;
+            }
+            else
+            {
+                Material += 0.25;
+            }
         }
         
         return Material;
