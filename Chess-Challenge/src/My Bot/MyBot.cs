@@ -18,7 +18,7 @@ public class MyBot : IChessBot
         Double MinMaterial = Double.MaxValue;
         bool isMaximizing = board.IsWhiteToMove;
         
-        int depth = 4;
+        int depth = 3;
 
         // w/ Depth
         foreach (Move move in board.GetLegalMoves())
@@ -41,8 +41,6 @@ public class MyBot : IChessBot
                     bestMove = move;
                 }
             }
-            
-            //Material = 0;
             board.UndoMove(move);
         }
 
@@ -176,11 +174,11 @@ public class MyBot : IChessBot
         {
             if (isWhite)
             {
-                return 1000 / (depth + 1); //play first Mate
+                return -10000 / (depth + 1); //play first Mate
             }
             else
             {
-                return 1000 / (depth + 1);
+                return 10000 / (depth + 1);
             }
         }
         if (board.IsDraw())

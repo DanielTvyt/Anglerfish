@@ -41,8 +41,6 @@ public class EvilBot : IChessBot
                     bestMove = move;
                 }
             }
-
-            //Material = 0;
             board.UndoMove(move);
         }
 
@@ -176,11 +174,11 @@ public class EvilBot : IChessBot
         {
             if (isWhite)
             {
-                return 1000 / (depth + 1); //play first Mate
+                return -10000 / (depth + 1); //play first Mate
             }
             else
             {
-                return 1000 / (depth + 1);
+                return 10000 / (depth + 1);
             }
         }
         if (board.IsDraw())
