@@ -18,13 +18,13 @@ public class MyBot : IChessBot
         Double MinMaterial = Double.MaxValue;
         bool isMaximizing = board.IsWhiteToMove;
         
-        int depth = 3;
+        int depth = 4;
 
         // w/ Depth
         foreach (Move move in board.GetLegalMoves())
         {
             board.MakeMove(move);
-            Material = Eval(board, depth, !isMaximizing);
+            Material = Eval(board, depth, Double.MinValue, Double.MaxValue, !isMaximizing);
             if (isMaximizing)
             {
                 if (Material > MaxMaterial)
@@ -44,77 +44,6 @@ public class MyBot : IChessBot
             board.UndoMove(move);
         }
 
-        /*
-        foreach (Move move in allMoves)
-        {
-            board.MakeMove(move);
-
-            // Always play checkmate in one
-            if (board.IsInCheckmate())
-            {
-                bestMove = move;
-                break;
-            }
-
-            
-
-            Material = MoveMaterial(board);
-
-            if (board.IsInCheck())
-            {
-                Material += 0.1;
-            }
-
-
-            if (board.IsDraw())
-            {
-                Material = 0;
-            }
-
-            foreach (Move move2 in board.GetLegalMoves())
-            {
-                board.MakeMove(move2);
-            
-                Material2 = MoveMaterial(board);
-            
-                if (board.IsInCheckmate())
-                {
-                    Material2 += 100;
-                }
-            
-                if (board.IsInCheck())
-                {
-                    Material2 += 0.1;
-                }
-            
-                if (board.IsDraw())
-                {
-                    Material2 = 0;
-                }
-            
-                if (Material2 < MaxMaterial2)
-                {
-                    MaxMaterial2 = Material2 * -1;
-                }
-            
-                Material2 = 0;
-                board.UndoMove(move2);
-            }
-            Console.WriteLine(MaxMaterial2);
-            Material = (Material + MaxMaterial2) / 2;
-            MaxMaterial2 = 1000;
-
-            if (Material > MaxMaterial)
-            {
-                MaxMaterial = Material;
-                bestMove = move;
-            }
-
-            Material = 0;
-            board.UndoMove(move);
-        }
-        */
-
         nodes /= 1000;
         if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes +"k"); } else {Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k"); } //Coment for Bot games
         //Console.WriteLine("StaticEval: " + MoveMaterial(board, 1));
@@ -122,7 +51,7 @@ public class MyBot : IChessBot
         return bestMove;
     }
 
-    public Double Eval (Board board, int depth, bool Maximizing)
+    public Double Eval (Board board, int depth, Double alpha, Double beta,  bool Maximizing)
     {
         depth--;
         Double material = 0;
@@ -141,9 +70,15 @@ public class MyBot : IChessBot
             foreach (Move move in board.GetLegalMoves())
             {
                 board.MakeMove(move);
-                material = Eval(board, depth, false);
+                material = Eval(board, depth, alpha, beta, false);
                 maxMaterial = Math.Max(material, maxMaterial);
                 board.UndoMove(move);
+
+                alpha = Math.Max(material, alpha);
+                if (beta <= alpha)
+                {
+                    break;
+                }
             }
             //Console.WriteLine(maxMaterial + " D: " + depth);
             return maxMaterial;
@@ -153,9 +88,15 @@ public class MyBot : IChessBot
             foreach (Move move in board.GetLegalMoves())
             {
                 board.MakeMove(move);
-                material = Eval(board, depth, true);
+                material = Eval(board, depth, alpha, beta, true);
                 minMaterial = Math.Min(material, minMaterial);
                 board.UndoMove(move);
+
+                beta = Math.Min(material, beta);
+                if (beta <= alpha)
+                {
+                    break;
+                }
             }
             //Console.WriteLine(minMaterial + " D: " + depth);
             return minMaterial;
