@@ -13,20 +13,27 @@ public class EvilBot : IChessBot
     public Move Think(Board board, Timer timer)
     {
         Move bestMove = board.GetLegalMoves()[0];
-        Double Material = 0;
-        Double MaxMaterial = Double.MinValue;
-        Double MinMaterial = Double.MaxValue;
+        Move move;
+        double Material = 0;
+        double MaxMaterial = double.MinValue;
+        double MinMaterial = double.MaxValue;
         bool isMaximizing = board.IsWhiteToMove;
-
+        int amountMoves = board.GetLegalMoves().Length;
         int depth = 4;
+        double alpha = double.MinValue;
+        double beta = double.MaxValue;
 
-        // w/ Depth
-        foreach (Move move in board.GetLegalMoves())
+        for (int i = 0; i < amountMoves; i++)
         {
+            move = board.GetLegalMoves()[i];
             board.MakeMove(move);
-            Material = Eval(board, depth, Double.MinValue, Double.MaxValue, !isMaximizing);
+
+            Material = Eval(board, depth, alpha, beta, !isMaximizing);
+
             if (isMaximizing)
             {
+                alpha = Math.Max(alpha, Material);
+
                 if (Material > MaxMaterial)
                 {
                     MaxMaterial = Material;
@@ -35,6 +42,8 @@ public class EvilBot : IChessBot
             }
             else
             {
+                beta = Math.Min(beta, Material);
+
                 if (Material < MinMaterial)
                 {
                     MinMaterial = Material;
@@ -43,20 +52,20 @@ public class EvilBot : IChessBot
             }
             board.UndoMove(move);
         }
-
+        //Console.WriteLine("N/ms: " + nodes/timer.MillisecondsElapsedThisTurn);
         nodes /= 1000;
-        //if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes + "k"); } else { Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k"); } //Coment for Bot games
+        if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes + "k"); } else { Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k"); } //Coment for Bot games
         //Console.WriteLine("StaticEval: " + MoveMaterial(board, 1));
-        //nodes = 0;
+        nodes = 0;
         return bestMove;
     }
 
-    public Double Eval(Board board, int depth, Double alpha, Double beta, bool Maximizing)
+    public double Eval(Board board, int depth, double alpha, double beta, bool Maximizing)
     {
         depth--;
-        Double material = 0;
-        Double maxMaterial = Double.MinValue;
-        Double minMaterial = Double.MaxValue;
+        double material = 0;
+        double maxMaterial = double.MinValue;
+        double minMaterial = double.MaxValue;
 
         if (depth <= 0 || board.IsInCheckmate() || board.IsDraw())
         {
@@ -103,23 +112,23 @@ public class EvilBot : IChessBot
         }
     }
 
-    public Double MoveMaterial(Board board, int depth)
+    public double MoveMaterial(Board board, int depth)
     {
-        //nodes++;
-        Double Material = 0;
+        nodes++;
+        double Material = 0;
         int Row = 0;
-        String FenBoard = board.GetFenString();
+        string FenBoard = board.GetFenString();
         bool isWhite = board.IsWhiteToMove;
 
         if (board.IsInCheckmate())
         {
             if (isWhite)
             {
-                return -10000 / (depth + 1); //play first Mate
+                return -1000 * (depth + 1); //play first Mate
             }
             else
             {
-                return 10000 / (depth + 1);
+                return 1000 * (depth + 1);
             }
         }
         if (board.IsDraw())
