@@ -1,4 +1,5 @@
 ﻿using ChessChallenge.API;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Raylib_cs;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -23,6 +24,7 @@ public class MyBot : IChessBot
         double alpha = double.MinValue;
         double beta = double.MaxValue;
 
+        Start:
         for (int i = 0; i < amountMoves; i++)
         {
             move = board.GetLegalMoves()[i];
@@ -52,9 +54,16 @@ public class MyBot : IChessBot
             }
             board.UndoMove(move);
         }
+
+        if (timer.MillisecondsElapsedThisTurn < 100 && timer.MillisecondsRemaining > 5000)
+        {
+            depth++;
+            goto Start;
+        }
+
         //Console.WriteLine("N/ms: " + nodes/timer.MillisecondsElapsedThisTurn);
         nodes /= 1000;
-        if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes +"k"); } else {Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k"); } //Coment for Bot games
+        if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes +"k d: " + depth); } else {Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k d: " + depth); }
         //Console.WriteLine("StaticEval: " + MoveMaterial(board, 1));
         nodes = 0;
         return bestMove;
@@ -192,7 +201,7 @@ public class MyBot : IChessBot
                 Material += 0.25;
             }
         }
-        
+
         return Material;
     } 
 }
