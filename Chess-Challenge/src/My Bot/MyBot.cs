@@ -2,7 +2,10 @@
 using Microsoft.CodeAnalysis.Diagnostics;
 using Raylib_cs;
 using System;
+using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
+using System.Linq;
 using System.Net.Security;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
@@ -11,70 +14,89 @@ using System.Xml.Linq;
 public class MyBot : IChessBot
 {
     public int nodes = 0;
+    //public int tBhits = 0;
+    Hashtable tableBase = new Hashtable();
     public Move Think(Board board, Timer timer)
     {
         Move bestMove = board.GetLegalMoves()[0];
         Move move;
-        double Material = 0;
-        double MaxMaterial = double.MinValue;
-        double MinMaterial = double.MaxValue;
-        bool isMaximizing = board.IsWhiteToMove;
         int amountMoves = board.GetLegalMoves().Length;
-        int depth = 4;
-        double alpha = double.MinValue;
-        double beta = double.MaxValue;
+        float[] Material = new float[amountMoves];
+        float MaxMaterial = float.MinValue;
+        float MinMaterial = float.MaxValue;
+        bool isMaximizing = board.IsWhiteToMove;
+        byte depth = 2; //start depth -1
+        float alpha = float.MinValue;
+        float beta = float.MaxValue;
+        Move[] legalMoves = board.GetLegalMoves();
 
-        Start:
-        for (int i = 0; i < amountMoves; i++)
+        int x = 0;
+        foreach (Move move1 in legalMoves)
         {
-            move = board.GetLegalMoves()[i];
-            board.MakeMove(move);
-
-            Material = Eval(board, depth, alpha, beta, !isMaximizing);
-            
-            if (isMaximizing)
-            {
-                alpha = Math.Max(alpha, Material);
-
-                if (Material > MaxMaterial)
-                {
-                    MaxMaterial = Material;
-                    bestMove = move;
-                }
-            }
-            else
-            {
-                beta = Math.Min(beta, Material);
-
-                if (Material < MinMaterial)
-                {
-                    MinMaterial = Material;
-                    bestMove = move;
-                }
-            }
-            board.UndoMove(move);
+            Material[x] = 0;
+            x++;
         }
-
-        if (timer.MillisecondsElapsedThisTurn < 100 && timer.MillisecondsRemaining > 5000)
+        while (timer.MillisecondsElapsedThisTurn < 80 && timer.MillisecondsRemaining > 5000 || depth < 0)
         {
             depth++;
-            goto Start;
+            var res = Material.Select((v, i) => new { v, i })
+            .OrderBy(p => p.v)
+            .Select(p => p.i)
+            .ToList();
+            Array.Reverse(Material);
+
+            MaxMaterial = float.MinValue;
+            MinMaterial = float.MaxValue;
+            alpha = float.MinValue;
+            beta = float.MaxValue;
+
+            //Console.WriteLine(bestMove + " D: "+ depth);
+            for (int y = 0; y < amountMoves; y++)
+            {
+                int i = (int)res[y];
+                //Console.WriteLine("i " + i + "M: " + Material[i]);
+                move = legalMoves[i];
+                board.MakeMove(move);
+
+                Material[i] = Eval(board, depth, alpha, beta, !isMaximizing);
+
+                if (isMaximizing)
+                {
+                    alpha = Math.Max(alpha, Material[i]);
+
+                    if (Material[i] > MaxMaterial)
+                    {
+                        MaxMaterial = Material[i];
+                        bestMove = move;
+                    }
+                }
+                else
+                {
+                    beta = Math.Min(beta, Material[i]);
+
+                    if (Material[i] < MinMaterial)
+                    {
+                        MinMaterial = Material[i];
+                        bestMove = move;
+                    }
+                }
+                board.UndoMove(move);
+            }
         }
 
-        //Console.WriteLine("N/ms: " + nodes/timer.MillisecondsElapsedThisTurn);
+        //Console.WriteLine("N/ms: " + nodes/timer.MillisecondsElapsedThisTurn + " TB Hits: " + tBhits);
         nodes /= 1000;
         if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes +"k d: " + depth); } else {Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k d: " + depth); }
-        //Console.WriteLine("StaticEval: " + MoveMaterial(board, 1));
         nodes = 0;
         return bestMove;
     }
 
-    public double Eval (Board board, int depth, double alpha, double beta,  bool Maximizing)
+    public float Eval (Board board, byte depth, float alpha, float beta,  bool Maximizing)
     {
         depth--;
-        double material = 0;
-        double maxMaterial = double.MinValue;
-        double minMaterial = double.MaxValue;
+        float material;
+        float maxMaterial = float.MinValue;
+        float minMaterial = float.MaxValue;
 
         if (depth <= 0 || board.IsInCheckmate() || board.IsDraw())
         {
@@ -121,12 +143,9 @@ public class MyBot : IChessBot
         }
     }
 
-    public double MoveMaterial(Board board, int depth)
+    public float MoveMaterial(Board board, byte depth)
     {
         nodes++;
-        double Material = 0;
-        int Row = 0;
-        string FenBoard = board.GetFenString();
         bool isWhite = board.IsWhiteToMove;
 
         if (board.IsInCheckmate())
@@ -144,8 +163,18 @@ public class MyBot : IChessBot
         {
             return 0;
         }
-     
 
+        string FenBoard = board.GetFenString();
+        
+        //ulong zobristKey = board.ZobristKey;
+        //if (tableBase.ContainsKey(zobristKey))
+        //{
+        //    //tBhits++;
+        //    return (float)Convert.ToDouble(tableBase[zobristKey]);
+        //}
+
+        float Material = 0;
+        byte Row = 0;
         for (int i = 0; i < FenBoard.Length; i++)
         {
             switch (FenBoard[i])
@@ -157,7 +186,7 @@ public class MyBot : IChessBot
                     Row++;
                     break;
                 case 'p':
-                    Material -= 1 + Row * 0.1;
+                    Material -= 1 + Row * 0.1f;
                     break;
                 case 'b':
                     Material -= 3;
@@ -173,7 +202,7 @@ public class MyBot : IChessBot
                     break;
 
                 case 'P':
-                    Material += 1 + (7 - Row) * 0.1;
+                    Material += 1 + (7 - Row) * 0.1f;
                     break;
                 case 'B':
                     Material += 3;
@@ -194,14 +223,14 @@ public class MyBot : IChessBot
         {
             if (isWhite)
             {
-                Material -= 0.25;
+                Material -= 0.25f;
             }
             else
             {
-                Material += 0.25;
+                Material += 0.25f;
             }
         }
-
+        //tableBase.Add(zobristKey, Material);
         return Material;
     } 
 }
