@@ -187,7 +187,7 @@ public class EvilBot : IChessBot
                     Material -= 1 + Row * 0.1f;
                     break;
                 case 'b':
-                    Material -= 3;
+                    Material -= 3.5f;
                     break;
                 case 'n':
                     Material -= 3;
@@ -203,7 +203,7 @@ public class EvilBot : IChessBot
                     Material += 1 + (7 - Row) * 0.1f;
                     break;
                 case 'B':
-                    Material += 3;
+                    Material += 3.5f;
                     break;
                 case 'N':
                     Material += 3;
