@@ -15,7 +15,7 @@ public class MyBot : IChessBot
 {
     public int nodes = 0;
     //public int tBhits = 0;
-    Hashtable tableBase = new Hashtable();
+    //Hashtable tableBase = new Hashtable();
     public Move Think(Board board, Timer timer)
     {
         Move bestMove = board.GetLegalMoves()[0];
@@ -165,7 +165,7 @@ public class MyBot : IChessBot
         }
 
         string FenBoard = board.GetFenString();
-        
+
         //ulong zobristKey = board.ZobristKey;
         //if (tableBase.ContainsKey(zobristKey))
         //{
@@ -175,24 +175,27 @@ public class MyBot : IChessBot
 
         float Material = 0;
         byte Row = 0;
+        byte file = 0;
         for (int i = 0; i < FenBoard.Length; i++)
         {
+            file++;
             switch (FenBoard[i])
             {
                 case ' ':
                     i = 100;
                     break;
                 case '/':
+                    file = 0;
                     Row++;
                     break;
                 case 'p':
-                    Material -= 1 + Row * 0.1f;
+                    Material -= (1 + Row * 0.1f);
                     break;
                 case 'b':
                     Material -= 3.5f;
                     break;
                 case 'n':
-                    Material -= 3;
+                    Material -= (float)(4 + -0.05 * Math.Pow((file - 4.5f), 2) -0.05 * Math.Pow((Row - 3.5f), 2));
                     break;
                 case 'r':
                     Material -= 5;
@@ -208,13 +211,35 @@ public class MyBot : IChessBot
                     Material += 3.5f;
                     break;
                 case 'N':
-                    Material += 3;
+                    Material += (float)(4 + -0.05 * Math.Pow((file - 4.5f), 2) -0.05 * Math.Pow((Row - 3.5f), 2));
+                    //Console.WriteLine(3 + -0.05 * Math.Pow((file - 4.5f), 2) + -0.05 * Math.Pow((Row - 4.5f), 2));
                     break;
                 case 'R':
                     Material += 5;
                     break;
                 case 'Q':
                     Material += 9;
+                    break;
+                //case '1':
+                //    file += 1;
+                //    break;
+                case '2':
+                    file += 1;
+                    break;
+                case '3':
+                    file += 2;
+                    break;
+                case '4':
+                    file += 3;
+                    break;
+                case '5':
+                    file += 4;
+                    break;
+                case '6':
+                    file += 5;
+                    break;
+                case '7':
+                    file += 6;
                     break;
             }
         }
