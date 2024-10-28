@@ -193,7 +193,7 @@ public class EvilBot : IChessBot
                     Material -= 3.5f;
                     break;
                 case 'n':
-                    Material -= (float)(4 + -0.05 * Math.Pow((file - 4.5f), 2) - 0.05 * Math.Pow((Row - 3.5f), 2));
+                    Material -= (float)(3 + -0.01 * Math.Pow((file - 4.5), 2) - 0.01 * Math.Pow((Row - 3.5), 2));
                     break;
                 case 'r':
                     Material -= 5;
@@ -209,8 +209,7 @@ public class EvilBot : IChessBot
                     Material += 3.5f;
                     break;
                 case 'N':
-                    Material += (float)(4 + -0.05 * Math.Pow((file - 4.5f), 2) - 0.05 * Math.Pow((Row - 3.5f), 2));
-                    //Console.WriteLine(3 + -0.05 * Math.Pow((file - 4.5f), 2) + -0.05 * Math.Pow((Row - 4.5f), 2));
+                    Material += (float)(3 + -0.01 * Math.Pow((file - 4.5), 2) - 0.01 * Math.Pow((Row - 3.5), 2));
                     break;
                 case 'R':
                     Material += 5;
