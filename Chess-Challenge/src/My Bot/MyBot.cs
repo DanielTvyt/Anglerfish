@@ -173,7 +173,7 @@ public class MyBot : IChessBot
                     Row++;
                     break;
                 case 'p':
-                    Material -= (1 + Row * 0.1f);
+                    Material -= (1 + Row * 0.05f);
                     break;
                 case 'b':
                     Material -= 3.5f;
@@ -189,7 +189,7 @@ public class MyBot : IChessBot
                     break;
 
                 case 'P':
-                    Material += 1 + (7 - Row) * 0.1f;
+                    Material += 1 + (7 - Row) * 0.05f;
                     break;
                 case 'B':
                     Material += 3.5f;

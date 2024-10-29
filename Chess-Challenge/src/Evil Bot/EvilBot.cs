@@ -78,7 +78,7 @@ public class EvilBot : IChessBot
 
         //Console.WriteLine("N/ms: " + nodes/timer.MillisecondsElapsedThisTurn + " TB Hits: " + tBhits);
         nodes /= 1000;
-        if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes + "k d: " + depth); } else { Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k d: " + depth); }
+        //if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes + "k d: " + depth); } else { Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k d: " + depth); }
         nodes = 0;
         return bestMove;
     }
@@ -179,7 +179,7 @@ public class EvilBot : IChessBot
                     Row++;
                     break;
                 case 'p':
-                    Material -= (1 + Row * 0.1f);
+                    Material -= (1 + Row * 0.05f);
                     break;
                 case 'b':
                     Material -= 3.5f;
@@ -195,7 +195,7 @@ public class EvilBot : IChessBot
                     break;
 
                 case 'P':
-                    Material += 1 + (7 - Row) * 0.1f;
+                    Material += 1 + (7 - Row) * 0.05f;
                     break;
                 case 'B':
                     Material += 3.5f;
