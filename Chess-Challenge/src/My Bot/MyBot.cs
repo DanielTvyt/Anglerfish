@@ -198,7 +198,7 @@ public class MyBot : IChessBot
                     Material -= (float)(3 + -0.01 * Math.Pow((file - 4.5), 2) -0.01 * Math.Pow((Row - 3.5), 2));
                     break;
                 case 'r':
-                    Material -= 5;
+                    Material -= (float)(5.5 - 0.02 * Math.Pow((6 - Row), 2));
                     break;
                 case 'q':
                     Material -= 9;
@@ -214,7 +214,7 @@ public class MyBot : IChessBot
                     Material += (float)(3 + -0.01 * Math.Pow((file - 4.5), 2) - 0.01 * Math.Pow((Row - 3.5), 2));
                     break;
                 case 'R':
-                    Material += 5;
+                    Material += (float)(5.5 - 0.02 * Math.Pow((2 - Row), 2)); ;
                     break;
                 case 'Q':
                     Material += 9;
@@ -243,13 +243,18 @@ public class MyBot : IChessBot
             }
         }
 
-        if (board.IsInCheck())
+        if (isWhite)
         {
-            if (isWhite)
+            //Material -= board.GetLegalMoves().Length * 0.01f;
+            if (board.IsInCheck())
             {
                 Material -= 0.25f;
             }
-            else
+        }
+        else
+        {
+            //Material += board.GetLegalMoves().Length * 0.01f;
+            if (board.IsInCheck())
             {
                 Material += 0.25f;
             }
