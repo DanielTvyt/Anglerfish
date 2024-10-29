@@ -16,25 +16,20 @@ public class EvilBot : IChessBot
     //Hashtable tableBase = new Hashtable();
     public Move Think(Board board, Timer timer)
     {
-        Move bestMove = board.GetLegalMoves()[0];
+        Move[] legalMoves = board.GetLegalMoves();
+        Move bestMove = legalMoves[0];
         Move move;
-        int amountMoves = board.GetLegalMoves().Length;
+        int amountMoves = legalMoves.Length;
         float[] Material = new float[amountMoves];
         float MaxMaterial = float.MinValue;
         float MinMaterial = float.MaxValue;
-        bool isMaximizing = board.IsWhiteToMove;
-        byte depth = 2; //start depth -1
         float alpha = float.MinValue;
         float beta = float.MaxValue;
-        Move[] legalMoves = board.GetLegalMoves();
+        bool isMaximizing = board.IsWhiteToMove;
 
-        int x = 0;
-        foreach (Move move1 in legalMoves)
-        {
-            Material[x] = 0;
-            x++;
-        }
-        while (timer.MillisecondsElapsedThisTurn < 80 && timer.MillisecondsRemaining > 5000 || depth < 0)
+        byte depth = 2; //start depth -1
+
+        while (timer.MillisecondsElapsedThisTurn < 80 && timer.MillisecondsRemaining > 5000 || depth < 2)
         {
             depth++;
             var res = Material.Select((v, i) => new { v, i })
@@ -52,7 +47,6 @@ public class EvilBot : IChessBot
             for (int y = 0; y < amountMoves; y++)
             {
                 int i = (int)res[y];
-                //Console.WriteLine("i " + i + "M: " + Material[i]);
                 move = legalMoves[i];
                 board.MakeMove(move);
 
@@ -84,7 +78,7 @@ public class EvilBot : IChessBot
 
         //Console.WriteLine("N/ms: " + nodes/timer.MillisecondsElapsedThisTurn + " TB Hits: " + tBhits);
         nodes /= 1000;
-        //if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes + "k d: " + depth); } else { Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k d: " + depth); }
+        if (isMaximizing) { Console.WriteLine("Max: " + Math.Round(MaxMaterial, 2) + " N: " + nodes + "k d: " + depth); } else { Console.WriteLine("Min: " + Math.Round(MinMaterial, 2) + " N: " + nodes + "k d: " + depth); }
         nodes = 0;
         return bestMove;
     }
@@ -93,8 +87,6 @@ public class EvilBot : IChessBot
     {
         depth--;
         float material;
-        float maxMaterial = float.MinValue;
-        float minMaterial = float.MaxValue;
 
         if (depth <= 0 || board.IsInCheckmate() || board.IsDraw())
         {
@@ -105,6 +97,7 @@ public class EvilBot : IChessBot
 
         if (Maximizing)
         {
+            float maxMaterial = float.MinValue;
             foreach (Move move in board.GetLegalMoves())
             {
                 board.MakeMove(move);
@@ -118,11 +111,11 @@ public class EvilBot : IChessBot
                     break;
                 }
             }
-            //Console.WriteLine(maxMaterial + " D: " + depth);
             return maxMaterial;
         }
         else
         {
+            float minMaterial = float.MaxValue;
             foreach (Move move in board.GetLegalMoves())
             {
                 board.MakeMove(move);
@@ -136,7 +129,6 @@ public class EvilBot : IChessBot
                     break;
                 }
             }
-            //Console.WriteLine(minMaterial + " D: " + depth);
             return minMaterial;
         }
     }
@@ -217,9 +209,6 @@ public class EvilBot : IChessBot
                 case 'Q':
                     Material += 9;
                     break;
-                //case '1':
-                //    file += 1;
-                //    break;
                 case '2':
                     file += 1;
                     break;
