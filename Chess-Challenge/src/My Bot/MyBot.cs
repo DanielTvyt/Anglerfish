@@ -162,7 +162,6 @@ public class MyBot : IChessBot
         byte file = 0;
         for (int i = 0; i < FenBoard.Length; i++)
         {
-            file++;
             switch (FenBoard[i])
             {
                 case ' ':
@@ -179,7 +178,7 @@ public class MyBot : IChessBot
                     Material -= 3.5f;
                     break;
                 case 'n':
-                    Material -= (float)(3 + -0.01 * Math.Pow((file - 4.5), 2) -0.01 * Math.Pow((Row - 3.5), 2));
+                    Material -= (float)(3 + -0.01 * Math.Pow((file - 3.5), 2) -0.01 * Math.Pow((Row - 3.5), 2));
                     break;
                 case 'r':
                     Material -= (float)(5.5 - 0.02 * Math.Pow((6 - Row), 2));
@@ -195,14 +194,15 @@ public class MyBot : IChessBot
                     Material += 3.5f;
                     break;
                 case 'N':
-                    Material += (float)(3 + -0.01 * Math.Pow((file - 4.5), 2) - 0.01 * Math.Pow((Row - 3.5), 2));
+                    Material += (float)(3 + -0.01 * Math.Pow((file - 3.5), 2) - 0.01 * Math.Pow((Row - 3.5), 2));
                     break;
                 case 'R':
-                    Material += (float)(5.5 - 0.02 * Math.Pow((2 - Row), 2)); ;
+                    Material += (float)(5.5 - 0.02 * Math.Pow((2 - Row), 2));
                     break;
                 case 'Q':
                     Material += 9;
                     break;
+
                 case '2':
                     file += 1;
                     break;
@@ -222,22 +222,23 @@ public class MyBot : IChessBot
                     file += 6;
                     break;
             }
+            file++;
         }
 
         if (isWhite)
         {
-            //Material -= board.GetLegalMoves().Length * 0.01f;
+            //Material += board.GetLegalMoves().Length * 0.01f;
             if (board.IsInCheck())
             {
-                Material -= 0.25f;
+                Material -= 0.15f;
             }
         }
         else
         {
-            //Material += board.GetLegalMoves().Length * 0.01f;
+            //Material -= board.GetLegalMoves().Length * 0.01f;
             if (board.IsInCheck())
             {
-                Material += 0.25f;
+                Material += 0.15f;
             }
         }
         //tableBase.Add(zobristKey, Material);
